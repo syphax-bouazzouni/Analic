@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="AlgoAnalyseV4:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/AlgoAnalyseV4_jar</output-path>
+    <root id="archive" name="AlgoAnalyse.jar">
+      <element id="module-output" name="AlgoAnalyse" />
+    </root>
+  </artifact>
+</component>

@@ -1,2 +1,2 @@
-# Analic1
+# Analic 
 A small numeric analysis Library

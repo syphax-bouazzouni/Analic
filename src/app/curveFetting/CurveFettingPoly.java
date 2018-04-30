@@ -2,6 +2,10 @@ package app.curveFetting;
 
 import app.function.Function;
 import app.matrice.Matrix;
+import app.matrice.exceptions.MatrixMultiplicationException;
+import app.matrice.exceptions.MatrixNullException;
+import app.matrice.exceptions.NotInversibleMatrixException;
+import app.matrice.exceptions.NotSquareMatrixException;
 import dep.fraction.Fraction;
 
 public class CurveFettingPoly extends CurveFetting {
@@ -11,27 +15,18 @@ public class CurveFettingPoly extends CurveFetting {
      */
     private int deg;
 
-    /**
-     * contain [sum(Xi^0),sum(Xi^1),..,sum(Xi^(2*deg))]
-     */
-    private Matrix sigmaVectorX;
-    /**
-     * contain [sum(Yi*(Xi^0)),sum(Yi*(Xi^1)),..,sum(Yi*(Xi^(deg))]
-     */
-    private Matrix sigmaVectorY;
-    /**
-     * Contain Aij = sigmaVector(i+j) with (0<=i<=deg) and (0<=j<=deg)
-     */
-    private Matrix normalMatrix;
+
 
     /**
-     * Construct sigmaVectorX ,sigmaVectorY and the normalMatrix <br>
-     * With asking the user for the number of point
+     *  * Construct sigmaVectorX ,sigmaVectorY and the normalMatrix <br>
      *
-     * @param deg the degree of the fitted polynomial
+     *
+     * @param deg  the degree of the fitted polynomial
+     * @param vectorX the vector of x
+     * @param vectorY the vector of y
      */
-    public CurveFettingPoly(int deg) {
-        super();
+    public CurveFettingPoly(int deg , Matrix vectorX ,Matrix vectorY) {
+        super(vectorX,vectorY);
         this.deg = deg;
 
         this.constructSigmaVectorX();
@@ -105,17 +100,7 @@ public class CurveFettingPoly extends CurveFetting {
     }
 
 
-    public Matrix getSigmaVectorX() {
-        return sigmaVectorX;
-    }
 
-    public Matrix getSigmaVectorY() {
-        return sigmaVectorY;
-    }
-
-    public Matrix getNormalMatrix() {
-        return normalMatrix;
-    }
 
 
     /**
@@ -124,7 +109,7 @@ public class CurveFettingPoly extends CurveFetting {
      * @return a function
      */
     @Override
-    public Function getFettingFunction() {
+    public Function getFettingFunction() throws NotSquareMatrixException, NotInversibleMatrixException, MatrixNullException, MatrixMultiplicationException {
         Matrix resultCof = Matrix.mul(this.normalMatrix.inverse(), Matrix.transpose(this.sigmaVectorY));
         // reslutCof is the result ceoficient
         // reslutCof = INVERSE(normalmatrix) * sigmaVectorY

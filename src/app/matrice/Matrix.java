@@ -55,6 +55,7 @@ public class Matrix {
      *
      * @param row the number of line
      * @param col the number of column
+     * @return the random matrix
      */
      public static Matrix random(int row, int col) {
 
@@ -104,6 +105,8 @@ public class Matrix {
      * @param m2 matrix 2
      * @param op the type of operation + or -
      * @return matrix = (m1 op m2)
+     * @throws OperationFormException  throw when m1 and m2 haven't the same number of columns or rows
+     * @throws MatrixNullException throw when m1 or m2 is null
      */
     public static Matrix operation(Matrix m1, Matrix m2, char op) throws OperationFormException, MatrixNullException {
 
@@ -164,6 +167,9 @@ public class Matrix {
      * @param m1 matrix 1
      * @param m2 matrix 2
      * @return mul = m1 * m2
+     * @throws MatrixNullException throw when m1 or m2 is null
+     * @throws MatrixMultiplicationException throw if the number of column in m1
+     * is diffrent of  the number of rows in m2
      */
     public static Matrix mul(Matrix m1, Matrix m2) throws MatrixNullException, MatrixMultiplicationException {
         Matrix mul = null;
@@ -189,6 +195,7 @@ public class Matrix {
      * @param m1 matrix
      * @param a  number (constant)
      * @return mul = m1 a
+     * @throws MatrixNullException throw when m1 is null
      */
     public static Matrix mul(Matrix m1, Fraction a) throws MatrixNullException {
         Matrix mul = null;
@@ -367,6 +374,7 @@ public class Matrix {
      * Give the determinant of a matrix
      *
      * @return a double
+     * @throws NotSquareMatrixException throw if the main matrix is not square
      */
     public Fraction det() throws NotSquareMatrixException {
         Fraction det = new Fraction(0);
@@ -394,7 +402,9 @@ public class Matrix {
      * Give  the coMatrix of a matrix
      *
      * @return a matrix
+     * @throws NotSquareMatrixException throw if the main matrix is not square
      */
+
     public Matrix coMat() throws NotSquareMatrixException{
 
         Matrix newMat = null;
@@ -415,6 +425,9 @@ public class Matrix {
      * it's use the methods coMat(),det(),mul(),transpose().
      *
      * @return a matrix
+     * @throws NotSquareMatrixException throw if the main matrix is not square
+     * @throws NotInversibleMatrixException throw if the determinant of the main matrix is null
+     * @throws MatrixNullException  throw when m1 is null
      */
     public Matrix inverse() throws NotSquareMatrixException, NotInversibleMatrixException, MatrixNullException {
         Fraction det = this.det();

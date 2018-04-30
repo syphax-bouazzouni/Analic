@@ -23,7 +23,7 @@ public abstract class CurveFetting {
      */
     protected Matrix sigmaVectorY;
     /**
-     * Contain Aij = sigmaVector(i+j) with (0<=i<=deg) and (0<=j<=deg)
+     * Contain Aij = sigmaVector(i+j) with (0 &lt;= i &lt;= deg) and (0 &lt;= j &lt;= deg)
      */
     protected Matrix normalMatrix;
 

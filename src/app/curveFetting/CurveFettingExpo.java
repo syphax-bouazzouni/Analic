@@ -1,6 +1,10 @@
 package app.curveFetting;
 
 import app.function.Function;
+import app.matrice.exceptions.MatrixMultiplicationException;
+import app.matrice.exceptions.MatrixNullException;
+import app.matrice.exceptions.NotInversibleMatrixException;
+import app.matrice.exceptions.NotSquareMatrixException;
 
 public class CurveFettingExpo extends CurveFittingLinear {
 
@@ -9,7 +13,7 @@ public class CurveFettingExpo extends CurveFittingLinear {
     }
 
     @Override
-    public Function getFettingFunction() {
+    public Function getFettingFunction() throws NotSquareMatrixException, MatrixNullException, MatrixMultiplicationException, NotInversibleMatrixException {
 
         Function function = super.getFettingFunction(); // function = B+(A*X)
         System.out.println("Function :" + function);

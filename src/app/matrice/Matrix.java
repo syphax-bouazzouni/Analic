@@ -1,10 +1,10 @@
 package app.matrice;
 
+import app.matrice.exceptions.*;
 import dep.fraction.Fraction;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 /**
  * Matrix is a class that impelment the most used operation of matrix : <br>
@@ -26,17 +26,14 @@ public class Matrix {
      * the number of column in the main matrix
      */
     private int colNb;
-    /**
-     * a scanner to read from the user
-     */
-    private Scanner sc = new Scanner(System.in);
+
     /**
      * the main matrix which is a list of list
      */
     private List<List<Fraction>> mat = new ArrayList<>();
 
     /**
-     * Construc a random(-100~x~100) martix
+     * Construct a null (all it's element are zero) matrix
      *
      * @param row the number of line
      * @param col the number of column
@@ -45,40 +42,36 @@ public class Matrix {
         this.rowNb = row;
         this.colNb = col;
         for (int i = 0; i < row; i++) {
-            this.mat.add(new ArrayList());
+            this.mat.add(new ArrayList<>());
+
             for (int j = 0; j < col; j++) {
-                this.mat.get(i).add(new Fraction((int) Math.round((Math.random() * 5) - 2.5)));
+                this.mat.get(i).add(new Fraction(0));
             }
         }
     }
 
     /**
-     * Create a matrix from the user
+     * give a random(-100~x~100) matrix
+     *
+     * @param row the number of line
+     * @param col the number of column
      */
-    public Matrix() {
-        System.out.println("Matrix Init");
+     public static Matrix random(int row, int col) {
 
-        System.out.print("Put the row ");
-        this.rowNb = sc.nextInt();
-        System.out.print("Put the column ");
-        this.colNb = sc.nextInt();
+        List<List<Fraction>> mat = new ArrayList<>();
 
-        System.out.println("Put elements of matrix");
-        for (int i = 0; i < this.rowNb; i++) {
+        for (int i = 0; i < row; i++) {
+            mat.add(new ArrayList<>());
 
-            this.mat.add(new ArrayList());
-            for (int j = 0; j < this.colNb; j++) {
-                System.out.print("\t Put elem (" + i + "," + j + ") : ");
-                this.mat.get(i).add(new Fraction(sc.nextInt()));
-                System.out.println();
+            for (int j = 0; j < col; j++) {
+                mat.get(i).add(new Fraction((int) Math.round((Math.random() * 5) - 2.5),
+                        (int) Math.round((Math.random() * 5) - 2.5)));
             }
-
         }
 
-        System.out.println(this.toString());
-
-
+        return new Matrix(mat);
     }
+
 
     /**
      * Create a matrix from a other matrix
@@ -95,7 +88,7 @@ public class Matrix {
             this.rowNb = mat.size();
             this.mat = new ArrayList<>();
             for (int i = 0; i < this.rowNb; i++) {
-                this.mat.add(new ArrayList());
+                this.mat.add(new ArrayList<>());
                 for (int j = 0; j < this.colNb; j++) {
                     this.mat.get(i).add(mat.get(i).get(j));
                 }
@@ -105,24 +98,23 @@ public class Matrix {
     }
 
     /**
-     * do add (if op=='+') or sub (if op=='-') for 2 matrix
+     * Do  the addition (if op=='+') or the subtraction (if op=='-') of 2 matrix
      *
      * @param m1 matrix 1
      * @param m2 matrix 2
      * @param op the type of operation + or -
      * @return matrix = (m1 op m2)
      */
-    public static Matrix operation(Matrix m1, Matrix m2, char op) {
+    public static Matrix operation(Matrix m1, Matrix m2, char op) throws OperationFormException, MatrixNullException {
 
         List<List<Fraction>> mAdd = null;
-        if (m1 == null || m2 == null) return null;
+        if (m1 == null || m2 == null) throw new MatrixNullException();
         else if (!m1.equalsForm(m2)) {
-            System.out.println("The 2 matrix haven't the same form");
-            return null;
+            throw  new OperationFormException();
         } else {
             mAdd = new ArrayList<>();
             for (int i = 0; i < m1.getRowNb(); i++) {
-                mAdd.add(new ArrayList());
+                mAdd.add(new ArrayList<>());
                 for (int j = 0; j < m1.getColNb(); j++) {
                     if (op == '+') mAdd.get(i).add(Fraction.add(m1.getElem(i, j), m2.getElem(i, j)));
                     else if (op == '-') mAdd.get(i).add(Fraction.sub(m1.getElem(i, j), m2.getElem(i, j)));
@@ -131,6 +123,16 @@ public class Matrix {
             return new Matrix(mAdd);
         }
 
+    }
+
+    /**
+     * Say if the number of columns in the main matrix is equals to the number
+     * of rows in an other matrix
+     * @param m the other matrix to compare
+     * @return the result
+     */
+    public boolean colEqualsRow(Matrix m){
+        return this.colNb == m.getRowNb();
     }
 
     /**
@@ -143,16 +145,14 @@ public class Matrix {
      * @param col the col of matrix 2
      * @return the sum
      */
-    private static Fraction sum(Matrix m1, Matrix m2, int row, int col) {
+    private static Fraction sum(Matrix m1, Matrix m2, int row, int col) throws MatrixMultiplicationException{
 
         Fraction sum = new Fraction(0);
-        if (m1 != null) {
-            List<Boolean> err = m1.compare(m2, "03");
 
-            if (err.get(0) && err.get(1)) {
-                for (int i = 0; i < m1.getColNb(); i++) {
-                    sum = Fraction.add(sum, (Fraction.mul(m1.getElem(row, i), m2.getElem(i, col))));
-                }
+        if (!m1.colEqualsRow(m2)) throw new MatrixMultiplicationException();
+        else {
+            for (int i = 0; i < m1.getColNb(); i++) {
+                sum = Fraction.add(sum, (Fraction.mul(m1.getElem(row, i), m2.getElem(i, col))));
             }
         }
         return sum;
@@ -165,23 +165,20 @@ public class Matrix {
      * @param m2 matrix 2
      * @return mul = m1 * m2
      */
-    public static Matrix mul(Matrix m1, Matrix m2) {
+    public static Matrix mul(Matrix m1, Matrix m2) throws MatrixNullException, MatrixMultiplicationException {
         Matrix mul = null;
         double sum = 0;
-        if (m1 != null) {
-            List<Boolean> err = m1.compare(m2, "03"); // see if m2!=null and if col1 == row2
 
-            if (err.get(0) && err.get(1)) {
-                mul = new Matrix(m1.getRowNb(), m2.getColNb());
-
-                for (int i = 0; i < mul.getRowNb(); i++) {
-                    for (int j = 0; j < mul.getColNb(); j++) {
-                        mul.setElem(i, j, Matrix.sum(m1, m2, i, j));
-                    }
+        if(m1==null || m2==null) throw new MatrixNullException();
+        else{
+            mul = new Matrix(m1.getRowNb(), m2.getColNb());
+            for (int i = 0; i < mul.getRowNb(); i++) {
+                for (int j = 0; j < mul.getColNb(); j++) {
+                    mul.setElem(i, j, Matrix.sum(m1, m2, i, j));
                 }
-            } else System.out.println(m1.getError(m2));
+            }
 
-        } else System.out.println("Matrix 1 is null");
+        }
 
         return mul;
     }
@@ -193,7 +190,7 @@ public class Matrix {
      * @param a  number (constant)
      * @return mul = m1 a
      */
-    public static Matrix mul(Matrix m1, Fraction a) {
+    public static Matrix mul(Matrix m1, Fraction a) throws MatrixNullException {
         Matrix mul = null;
         if (m1 != null) {
             mul = new Matrix(m1.getRowNb(), m1.getColNb());
@@ -203,7 +200,7 @@ public class Matrix {
                     mul.setElem(i, j, Fraction.mul(m1.getElem(i, j), a));
                 }
             }
-        } else System.out.println("Matrix 1 is null");
+        } else throw new MatrixNullException();
 
         return mul;
     }
@@ -290,7 +287,7 @@ public class Matrix {
         String str = "Matrix{ \n";
 
 
-        for (List l : mat) {
+        for (List<Fraction> l : mat) {
             str += "\t" + l + "\n";
         }
 
@@ -314,7 +311,7 @@ public class Matrix {
      * @return true or false
      */
     public boolean equalsForm(Matrix m) {
-        return (m == null) ? false : ((m.getRowNb() == this.rowNb) && (m.getColNb() == this.colNb));
+        return (m != null) && ((m.getRowNb() == this.rowNb) && (m.getColNb() == this.colNb));
     }
 
     /**
@@ -322,91 +319,12 @@ public class Matrix {
      *
      * @return true or false
      */
-    public boolean isSquare() {
-        if (this.colNb != this.rowNb) {
-            System.out.println("Matrix isn't a square");
-            return false;
-        }
-        return true;
+    public boolean isSquare(){
+
+        return this.colNb != this.rowNb;
+
     }
 
-    /**
-     * compare two matrix
-     *
-     * @param m the matrix to compare with the main matrix
-     * @return a list of boolean errors thar are :
-     * 0 - matrix null
-     * 1 - Col1 == Col2
-     * 2 - Row1 == Row2
-     * 3 - Col1 == Row2
-     * 4 - Row1 == Col2
-     */
-    public List<Boolean> compare(Matrix m) {
-        List<Boolean> tabEror = new ArrayList<Boolean>();
-        for (int i = 0; i < 5; i++) {
-            tabEror.add(false);
-        }
-
-        tabEror.set(0, m != null);
-        tabEror.set(1, this.colNb == m.getColNb());
-        tabEror.set(2, this.rowNb == m.getRowNb());
-        tabEror.set(3, this.colNb == m.getRowNb());
-        tabEror.set(4, this.rowNb == m.getColNb());
-
-        return tabEror;
-    }
-
-    /**
-     * the same that the first compare
-     * the change here is that we can specify which error to check with "numErr"
-     * <p>
-     * Exemple : compare(m1,"12") it will check if (Col1 == Col2 and Row1 == Row2 )
-     *
-     * @param m      the matrix to compare with the main matrix
-     * @param numErr it's a string wich specify wich error to check from 0 to 4
-     * @return a list of boolean
-     */
-    public List<Boolean> compare(Matrix m, String numErr) {
-        List<Boolean> tabEror = new ArrayList<Boolean>();
-
-
-        if (numErr.contains("0")) tabEror.add(m != null);
-        if (numErr.contains("1")) tabEror.add(this.colNb == m.getColNb());
-        if (numErr.contains("2")) tabEror.add(this.rowNb == m.getRowNb());
-        if (numErr.contains("3")) tabEror.add(this.colNb == m.getRowNb());
-        if (numErr.contains("4")) tabEror.add(this.rowNb == m.getColNb());
-
-
-        return tabEror;
-    }
-
-    /**
-     * Use method compare  to print errors
-     *
-     * @param m the matrix to compare with the main matrix
-     * @return a string of errors
-     */
-    public String getError(Matrix m) {
-        List<String> stringErr = new ArrayList<String>();
-        String[] tabErr = new String[5];
-        String str = "";
-        tabErr[0] = "The Matrix is null";
-        tabErr[1] = "The col of matrix 1 is diffrent of col matrix 2 ";
-        tabErr[2] = "The row of matrix 1 is diffrent of row matrix 2 ";
-        tabErr[3] = "The col of matrix 1 is diffrent of row matrix 2 ";
-        tabErr[4] = "The row of matrix 1 is diffrent of col matrix 2 ";
-
-        int i = 0;
-
-        for (Boolean b : this.compare(m)) {
-
-            if (!b) str += "\t - " + tabErr[i] + " \n";
-
-            i++;
-        }
-
-        return str;
-    }
 
     /**
      * Give the mineur of matrix : omit row iOrg and omit column jOrg
@@ -450,9 +368,11 @@ public class Matrix {
      *
      * @return a double
      */
-    public Fraction det() {
+    public Fraction det() throws NotSquareMatrixException {
         Fraction det = new Fraction(0);
-        if ((this.isSquare()) && (this.rowNb > 2)) {
+
+        if(!this.isSquare()) throw new NotSquareMatrixException();
+        else if (this.rowNb > 2){
             for (int i = 0; i < this.colNb; i++) {
                 det = Fraction.add(
                         det,
@@ -475,7 +395,7 @@ public class Matrix {
      *
      * @return a matrix
      */
-    public Matrix coMat() {
+    public Matrix coMat() throws NotSquareMatrixException{
 
         Matrix newMat = null;
         if (this.isSquare()) {
@@ -496,12 +416,12 @@ public class Matrix {
      *
      * @return a matrix
      */
-    public Matrix inverse() {
+    public Matrix inverse() throws NotSquareMatrixException, NotInversibleMatrixException, MatrixNullException {
         Fraction det = this.det();
         if (!det.isNul()) return Matrix.mul(Matrix.transpose(this.coMat()), Fraction.div(new Fraction(1), det));
         else {
-            System.out.println("Imposible to inverse (det=0)");
-            return null;
+            System.out.println("Impossible to inverse (det=0)");
+            throw new NotInversibleMatrixException();
         }
     }
 
@@ -532,8 +452,8 @@ public class Matrix {
      * @param rowB the second line (line 1 become line 2)
      */
     private void switchLine(int rowA, int rowB) {
-        List a = this.getLine(rowA);
-        List b = this.getLine(rowB);
+        List<Fraction> a = this.getLine(rowA);
+        List<Fraction> b = this.getLine(rowB);
 
         this.setLine(rowA, b);
         this.setLine(rowB, a);
@@ -564,7 +484,7 @@ public class Matrix {
      */
     public Matrix echelonner() {
         Matrix newMat = this.clone();  // we clone the original matrice
-        List pivot;
+        List<Fraction> pivot;
         Fraction cof;
 
         for (int i = 0; i < Math.min(this.colNb, this.rowNb); i++) {
@@ -582,14 +502,14 @@ public class Matrix {
 
                 // we omit for each line the pivot
                 for (int j = i + 1; j < this.rowNb; j++) {
-                    cof = Fraction.div(newMat.getElem(j, i), (Fraction) pivot.get(i));
+                    cof = Fraction.div(newMat.getElem(j, i), pivot.get(i));
                     //System.out.println(newMat);
                     //System.out.println("cof = "+cof);
                     for (int l = 0; l < this.colNb; l++) {
 
                         newMat.setElem(j, l, Fraction.sub(
                                 newMat.getElem(j, l),
-                                Fraction.mul(cof, (Fraction) pivot.get(l)))
+                                Fraction.mul(cof, pivot.get(l)))
                         );
                     }
                 }
@@ -626,7 +546,7 @@ public class Matrix {
      *
      * @return rank an integer which the number of line deffirent of zero in echelonne form
      */
-    public int rank() {
+    public Fraction rank() {
         Matrix newMat = this.echelonner();
         int rank = newMat.getRowNb(); //the rank in max is the raw of the matrix
         int i;
@@ -643,7 +563,7 @@ public class Matrix {
 
             if (lineIsNull) rank--;
         }
-        return rank; // rank = the Max row of matrix - number of line that are all zero;
+        return new Fraction(rank); // rank = the Max row of matrix - number of line that are all zero;
 
     }
 
